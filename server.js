@@ -8,17 +8,11 @@ const PORT = process.env.PORT || 3000;
 
 // 3. Konfigurasi Middleware
 
-// Konfigurasi CORS untuk memberi izin pada frontend Netlify Anda
-const corsOptions = {
-  origin: 'https://fluentvoices.netlify.app' // URL Frontend Anda
-};
-
-// Terapkan middleware CORS untuk semua request
-app.use(cors(corsOptions));
-
-// Tambahkan baris ini untuk secara eksplisit menangani pre-flight request dari browser
-app.options('*', cors(corsOptions)); 
-
+// Terapkan middleware CORS untuk semua request. 
+// Ini harus berada di paling atas, sebelum definisi route lain.
+app.use(cors({
+  origin: 'https://fluentvoices.netlify.app'
+}));
 
 app.use(express.json()); // Mem-parsing body permintaan dalam format JSON
 app.use(express.urlencoded({ extended: true })); // Mem-parsing body dari form HTML
