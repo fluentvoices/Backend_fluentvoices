@@ -42,30 +42,31 @@ const transporter = nodemailer.createTransport({
 // --- SELESAI KONFIGURASI NODEMAILER ---
 
 
-// 4. Membuat route untuk endpoint pendaftaran
 app.post('/daftar', (req, res) => {
     const dataPendaftar = req.body;
 
     console.log('🎉 Data pendaftaran baru diterima:', dataPendaftar);
 
-    // Validasi sederhana
     if (!dataPendaftar.Nama || !dataPendaftar.Telepon || !dataPendaftar.Email) {
         return res.status(400).json({ message: 'Data tidak lengkap. Nama, Telepon, dan Email wajib diisi.' });
     }
 
-    // --- MULAI LOGIKA KIRIM EMAIL ---
+    // --- Format nomor WhatsApp untuk link ---
+    // Menghapus spasi atau tanda hubung dan mengganti '0' di depan dengan '62'
+    const nomorWhatsappLink = dataPendaftar.Telepon.replace(/\s|-/g, '').replace(/^0/, '62');
 
     // Menyiapkan isi email yang akan dikirim
     const mailOptions = {
-        from: '"Fluent Voice Notifikasi" <fluentvoicesenglish@gmail.com>', // Nama dan email pengirim
-        to: 'fluentvoicesenglish@gmail.com', // Email tujuan (email Anda)
-        subject: `Pendaftaran Baru dari ${dataPendaftar.Nama}`, // Subjek email
+        from: '"Fluent Voice Notifikasi" <fluentvoicesenglish@gmail.com>',
+        to: 'fluentvoicesenglish@gmail.com',
+        subject: `Pendaftaran Baru dari ${dataPendaftar.Nama}`,
+        // --- Perubahan ada di baris "No. WhatsApp" di bawah ini ---
         html: `
             <h3>Pendaftaran Baru Telah Diterima!</h3>
             <p>Berikut adalah detail pendaftar:</p>
             <ul>
                 <li><strong>Nama:</strong> ${dataPendaftar.Nama}</li>
-                <li><strong>No. WhatsApp:</strong> ${dataPendaftar.Telepon}</li>
+                <li><strong>No. WhatsApp:</strong> <a href="https://wa.me/${nomorWhatsappLink}" target="_blank">${dataPendaftar.Telepon}</a></li>
                 <li><strong>Email:</strong> ${dataPendaftar.Email}</li>
                 <li><strong>Kelompok Umur:</strong> ${dataPendaftar.Umur}</li>
                 <li><strong>Kota:</strong> ${dataPendaftar.Kota}</li>
@@ -77,16 +78,11 @@ app.post('/daftar', (req, res) => {
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             console.error('Error saat mengirim email:', error);
-            // Tetap kirim respons sukses ke pengguna agar tidak membingungkan,
-            // tapi kita tahu ada masalah di backend.
             return res.status(200).json({ message: 'Pendaftaran Anda berhasil, namun terjadi kesalahan internal saat notifikasi email.' });
         }
         console.log('Email berhasil dikirim:', info.response);
-        // Kirim respons sukses jika email berhasil dikirim
         res.status(200).json({ message: 'Pendaftaran Anda telah berhasil kami terima! Tim kami akan segera menghubungi Anda.' });
     });
-
-    // --- SELESAI LOGIKA KIRIM EMAIL ---
 });
 
 // 6. Menjalankan server
