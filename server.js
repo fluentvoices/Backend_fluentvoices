@@ -8,25 +8,23 @@ const PORT = process.env.PORT || 3000;
 
 // 3. Konfigurasi Middleware
 
-// Terapkan middleware CORS untuk semua request. 
-// Ini harus berada di paling atas, sebelum definisi route lain.
-// Gunakan kode ini sebagai gantinya:
+// --- Konfigurasi CORS yang Aman (Direkomendasikan) ---
+// Daftar ini hanya mengizinkan permintaan dari URL frontend Anda yang sah.
 const allowedOrigins = [
-  'https://fluentvoices.netlify.app',
-  'http://localhost:3000', // Jika Anda menjalankan frontend secara lokal
-  // Anda juga bisa menambahkan origin lain jika perlu
+  'https://fluentvoices.netlify.app', // URL Netlify Anda
+  'http://localhost:3000',             // Untuk development/testing di komputer lokal
+  'http://127.0.0.1:5500'              // Untuk testing file HTML langsung dari VS Code Live Server
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Izinkan request tanpa origin (seperti dari Postman atau mobile apps)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    // Izinkan request jika origin-nya ada di dalam daftar 'allowedOrigins'
+    // atau jika request tidak memiliki origin (seperti dari Postman atau aplikasi sejenis)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Akses tidak diizinkan oleh kebijakan CORS'));
     }
-    return callback(null, true);
   }
 }));
 
@@ -34,17 +32,12 @@ app.use(express.json()); // Mem-parsing body permintaan dalam format JSON
 app.use(express.urlencoded({ extended: true })); // Mem-parsing body dari form HTML
 
 // 4. Membuat route untuk endpoint pendaftaran
-// Ini adalah URL yang akan dituju oleh formulir Anda
 app.post('/daftar', (req, res) => {
     // req.body akan berisi data yang dikirim dari formulir
     const dataPendaftar = req.body;
 
-    console.log('🎉 Data pendaftaran baru diterima:'); //
+    console.log('🎉 Data pendaftaran baru diterima:');
     console.log(dataPendaftar);
-
-    // --- Logika Pemrosesan Data ---
-    // Di sini Anda bisa menyimpan data ke database, mengirim email, dll.
-    // Untuk saat ini, kita hanya akan menampilkannya di konsol server.
 
     // Validasi sederhana
     if (!dataPendaftar.Nama || !dataPendaftar.Telepon || !dataPendaftar.Email) {
@@ -53,11 +46,10 @@ app.post('/daftar', (req, res) => {
     }
 
     // 5. Mengirim respons kembali ke frontend
-    // Mengirim pesan sukses jika data diterima dengan baik
     res.status(200).json({ message: 'Pendaftaran Anda telah berhasil kami terima! Tim kami akan segera menghubungi Anda.' });
 });
 
 // 6. Menjalankan server
 app.listen(PORT, () => {
-    console.log(`🚀 Server Fluent Voice berjalan di http://localhost:${PORT}`);
+    console.log(`🚀 Server Fluent Voice berjalan di port: ${PORT}`);
 });
