@@ -10,8 +10,24 @@ const PORT = process.env.PORT || 3000;
 
 // Terapkan middleware CORS untuk semua request. 
 // Ini harus berada di paling atas, sebelum definisi route lain.
+// Gunakan kode ini sebagai gantinya:
+const allowedOrigins = [
+  'https://fluentvoices.netlify.app',
+  'http://localhost:3000', // Jika Anda menjalankan frontend secara lokal
+  // Anda juga bisa menambahkan origin lain jika perlu
+];
+
 app.use(cors({
-  origin: 'https://fluentvoices.netlify.app'
+  origin: function (origin, callback) {
+    // Izinkan request tanpa origin (seperti dari Postman atau mobile apps)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
 }));
 
 app.use(express.json()); // Mem-parsing body permintaan dalam format JSON
