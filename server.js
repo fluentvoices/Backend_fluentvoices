@@ -17,7 +17,18 @@ const allowedOrigins = [
   // Anda juga bisa menambahkan origin lain jika perlu
 ];
 
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    // Izinkan request tanpa origin (seperti dari Postman atau mobile apps)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
 
 app.use(express.json()); // Mem-parsing body permintaan dalam format JSON
 app.use(express.urlencoded({ extended: true })); // Mem-parsing body dari form HTML
