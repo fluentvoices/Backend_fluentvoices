@@ -7,7 +7,22 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 3. Konfigurasi Middleware
-app.use(cors()); // Mengizinkan permintaan dari frontend
+
+// ▼▼▼▼▼ UBAH BAGIAN DI BAWAH INI ▼▼▼▼▼
+
+// HAPUS ATAU BERI KOMENTAR BARIS INI:
+// app.use(cors());
+
+// GANTI DENGAN KODE BARU INI UNTUK MEMBERI IZIN PADA NETLIFY:
+const corsOptions = {
+  origin: 'https://fluentvoices.netlify.app', // URL Frontend Anda
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// ▲▲▲▲▲ SAMPAI DI SINI ▲▲▲▲▲
+
+
 app.use(express.json()); // Mem-parsing body permintaan dalam format JSON
 app.use(express.urlencoded({ extended: true })); // Mem-parsing body dari form HTML
 
