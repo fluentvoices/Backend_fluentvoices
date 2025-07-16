@@ -47,8 +47,9 @@ app.post('/daftar', (req, res) => {
 
     console.log('🎉 Data pendaftaran baru diterima:', dataPendaftar);
 
-    if (!dataPendaftar.Nama || !dataPendaftar.Telepon || !dataPendaftar.Email) {
-        return res.status(400).json({ message: 'Data tidak lengkap. Nama, Telepon, dan Email wajib diisi.' });
+    // Anda bisa menambahkan validasi untuk Paket jika diperlukan
+    if (!dataPendaftar.Nama || !dataPendaftar.Telepon || !dataPendaftar.Email || !dataPendaftar.Paket) {
+        return res.status(400).json({ message: 'Data tidak lengkap. Semua kolom wajib diisi.' });
     }
 
     // --- Format nomor WhatsApp untuk link ---
@@ -60,7 +61,7 @@ app.post('/daftar', (req, res) => {
         from: '"Fluent Voice Notifikasi" <fluentvoicesenglish@gmail.com>',
         to: 'fluentvoicesenglish@gmail.com',
         subject: `Pendaftaran Baru dari ${dataPendaftar.Nama}`,
-        // --- Perubahan ada di baris "No. WhatsApp" di bawah ini ---
+        // --- Perubahan ada di dalam <ul> di bawah ini ---
         html: `
             <h3>Pendaftaran Baru Telah Diterima!</h3>
             <p>Berikut adalah detail pendaftar:</p>
@@ -70,6 +71,7 @@ app.post('/daftar', (req, res) => {
                 <li><strong>Email:</strong> ${dataPendaftar.Email}</li>
                 <li><strong>Kelompok Umur:</strong> ${dataPendaftar.Umur}</li>
                 <li><strong>Kota:</strong> ${dataPendaftar.Kota}</li>
+                <li><strong>Paket yang Dipilih:</strong> ${dataPendaftar.Paket}</li>
             </ul>
         `
     };
