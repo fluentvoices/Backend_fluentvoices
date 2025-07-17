@@ -1,7 +1,7 @@
 // 1. Impor package yang dibutuhkan
 const express = require('express');
 const cors = require('cors');
-const nodemailer = require('nodemailer'); // -> TAMBAHKAN INI
+const nodemailer = require('nodemailer');
 
 // 2. Inisialisasi aplikasi Express
 const app = express();
@@ -27,19 +27,16 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- MULAI KONFIGURASI NODEMAILER ---
+// --- KONFIGURASI NODEMAILER ---
 
 // Konfigurasi untuk mengirim email menggunakan akun Gmail Anda
-// Ganti dengan email dan Sandi Aplikasi yang sudah Anda buat
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'fluentvoicesenglish@gmail.com', // Email Anda
-        pass: 'fymy igic kvaq zxke' // -> GANTI DENGAN SANDI APLIKASI
+        pass: 'fymy igic kvaq zxke' // Sandi Aplikasi Anda
     }
 });
-
-// --- SELESAI KONFIGURASI NODEMAILER ---
 
 
 app.post('/daftar', (req, res) => {
@@ -47,21 +44,29 @@ app.post('/daftar', (req, res) => {
 
     console.log('🎉 Data pendaftaran baru diterima:', dataPendaftar);
 
-    // Anda bisa menambahkan validasi untuk Paket jika diperlukan
     if (!dataPendaftar.Nama || !dataPendaftar.Telepon || !dataPendaftar.Email || !dataPendaftar.Paket) {
         return res.status(400).json({ message: 'Data tidak lengkap. Semua kolom wajib diisi.' });
     }
 
     // --- Format nomor WhatsApp untuk link ---
-    // Menghapus spasi atau tanda hubung dan mengganti '0' di depan dengan '62'
     const nomorWhatsappLink = dataPendaftar.Telepon.replace(/\s|-/g, '').replace(/^0/, '62');
+
+    // === PERUBAHAN DIMULAI DI SINI ===
+
+    // 1. Siapkan variabel kosong untuk menampung HTML kode promo
+    let promoCodeHtml = '';
+
+    // 2. Cek apakah pendaftar mengirimkan kode promo
+    if (dataPendaftar.KodePromo) {
+        // Jika ya, isi variabel dengan baris HTML untuk ditampilkan di email
+        promoCodeHtml = `<li><strong>Kode Promo Digunakan:</strong> <span style="background-color: #adff00; color: #1a1a1a; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${dataPendaftar.KodePromo}</span></li>`;
+    }
 
     // Menyiapkan isi email yang akan dikirim
     const mailOptions = {
         from: '"Fluent Voice Notifikasi" <fluentvoicesenglish@gmail.com>',
         to: 'fluentvoicesenglish@gmail.com',
         subject: `Pendaftaran Baru dari ${dataPendaftar.Nama}`,
-        // --- Perubahan ada di dalam <ul> di bawah ini ---
         html: `
             <h3>Pendaftaran Baru Telah Diterima!</h3>
             <p>Berikut adalah detail pendaftar:</p>
@@ -72,9 +77,13 @@ app.post('/daftar', (req, res) => {
                 <li><strong>Kelompok Umur:</strong> ${dataPendaftar.Umur}</li>
                 <li><strong>Kota:</strong> ${dataPendaftar.Kota}</li>
                 <li><strong>Paket yang Dipilih:</strong> ${dataPendaftar.Paket}</li>
+                ${promoCodeHtml} 
             </ul>
         `
     };
+
+    // === PERUBAHAN SELESAI ===
+
 
     // Mengirim email
     transporter.sendMail(mailOptions, (error, info) => {
